@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Price_Source__c</fullName>
+    <description>created to store from which source the price is coming</description>
+    <label>Price Source</label>
+    <required>true</required>
+    <trackHistory>false</trackHistory>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>ERP</fullName>
+                <default>false</default>
+                <label>ERP</label>
+            </value>
+            <value>
+                <fullName>Local</fullName>
+                <default>false</default>
+                <label>Local</label>
+            </value>
+            <value>
+                <fullName>Override</fullName>
+                <default>false</default>
+                <label>Override</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>
