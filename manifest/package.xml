@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>*</members>
@@ -37,7 +37,31 @@
         <members>Order</members>
         <members>OrderItem</members>
         <members>Product2</members>
+        <members>PricebookEntry</members>
+        <members>Pricebook2</members>
+        <members>ContentVersion</members>
+        <members>ContentDocument</members>
+        <members>Integration_Log__c</members>
+        <members>Sync_Log__c</members>
+        <members>Catalogue_Config__mdt</members>
         <name>CustomObject</name>
-        </types>
-    <version>67.0</version>
+    </types>
+    <types>
+        <members>Catalogue_Config.Active_Orders</members>
+        <members>Catalogue_Config.All_Products</members>
+        <members>Catalogue_Config.Available_Products</members>
+        <members>Catalogue_Config.ERP_Fallback_Price</members>
+        <members>Catalogue_Config.Failed_ERP_Orders</members>
+        <members>Catalogue_Config.Integration_Error_Logs</members>
+        <members>Catalogue_Config.Integration_Exceptions</members>
+        <members>Catalogue_Config.Local_Fallback_Price</members>
+        <members>Catalogue_Config.Overriden_Fallback_Price</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
+        <members>OMS_Manager</members>
+        <members>OMS_Sales_Representative</members>
+        <name>PermissionSet</name>
+    </types>
+    <version>60.0</version>
 </Package>
