@@ -1,0 +1,11 @@
+.table-scroll {
+    overflow-x: auto;
+}
+
+table {
+    min-width: 1100px;
+}
+
+.slds-text-color_error {
+    overflow-wrap: anywhere;
+}

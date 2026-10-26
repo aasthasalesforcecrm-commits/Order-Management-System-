@@ -1,0 +1,196 @@
+<template>
+    <lightning-card title="OMS Product Catalogue" icon-name="standard:product">
+        <div class="slds-p-around_medium">
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                    <lightning-input type="search" label="Search product name or code" value={searchText}
+                        onchange={handleSearchChange}></lightning-input>
+                </div>
+                <template if:true={showFamilyFilter}>
+                    <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                        <lightning-combobox label="Family" value={selectedFamily} options={familyOptions}
+                            onchange={handleFamilyChange}></lightning-combobox>
+                    </div>
+                </template>
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+                    <lightning-combobox label="Sort by" value={sortValue} options={sortOptions}
+                        onchange={handleSortChange}></lightning-combobox>
+                </div>
+            </div>
+
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading catalogue" size="medium"></lightning-spinner>
+            </template>
+            <template if:true={errorMessage}>
+                <div class="slds-text-color_error slds-m-top_small" role="alert">{errorMessage}</div>
+            </template>
+
+            <template if:true={hasProducts}>
+                <div class="table-scroll slds-m-top_medium">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">
+                                    <div class="slds-truncate">Product Name</div>
+                                </th>
+                                <template for:each={columns} for:item="column">
+                                    <th key={column.fieldName} scope="col">
+                                        <div class="slds-truncate">{column.label}</div>
+                                    </th>
+                                </template>
+                                <th scope="col">ERP / Local Price</th>
+                                <th scope="col">Order Qty</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={products} for:item="product">
+                                <tr key={product.id}>
+                                    <td>
+                                        <div class="slds-truncate" title={product.name}>{product.name}</div>
+                                    </td>
+                                    <template for:each={product.cells} for:item="cell">
+                                        <td key={cell.key}>{cell.value}</td>
+                                    </template>
+                                    <td>
+                                        <template if:true={product.hasUnitPrice}>
+                                            <lightning-formatted-number value={product.unitPrice}
+                                                format-style="currency"></lightning-formatted-number>
+                                        </template>
+                                        <template if:false={product.hasUnitPrice}>
+                                            <span class="slds-text-color_weak">Price checked on add</span>
+                                        </template>
+                                    </td>
+                                    <td>
+                                        <lightning-input type="number" variant="label-hidden" label="Order quantity"
+                                            min="1" step="1" data-id={product.id} value={product.requestedQuantity}
+                                            onchange={handleQuantityChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-button label="Add to Cart" variant="brand" data-id={product.id}
+                                            onclick={handleAddToCart} disabled={isWorking}></lightning-button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="slds-grid slds-grid_align-spread slds-m-top_medium">
+                    <lightning-button label="Previous" onclick={handlePrevious}
+                        disabled={isFirstPage}></lightning-button>
+                    <span>Page {pageNumber} of {totalPages} · {totalRecords} products</span>
+                    <lightning-button label="Next" onclick={handleNext} disabled={isLastPage}></lightning-button>
+                </div>
+            </template>
+            <template if:false={hasProducts}>
+                <template if:false={isLoading}>
+                    <p class="slds-m-top_medium">No active products match your search.</p>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+
+    <lightning-card title="Shopping Cart and Checkout" icon-name="standard:cart" class="slds-m-top_medium">
+        <div class="slds-p-around_medium">
+            <div class="slds-grid slds-wrap slds-gutters">
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                    <lightning-input type="search" label="Search Account" value={accountSearch}
+                        onchange={handleAccountSearchChange}></lightning-input>
+                    <lightning-combobox class="slds-m-top_small" label="Account (required)" value={selectedAccountId}
+                        options={accountOptions} onchange={handleAccountChange}></lightning-combobox>
+                </div>
+                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                    <p><strong>Items:</strong> {cartCount}</p>
+                    <p><strong>Subtotal:</strong>
+                        <lightning-formatted-number value={cartSubtotal}
+                            format-style="currency"></lightning-formatted-number>
+                    </p>
+                    <template if:true={isManager}>
+                        <p class="slds-text-color_success slds-m-top_small">Manager price override is available.</p>
+                    </template>
+                    <template if:false={isManager}>
+                        <p class="slds-text-color_weak slds-m-top_small">Sales Representatives cannot override prices.
+                        </p>
+                    </template>
+                </div>
+            </div>
+
+            <template if:true={hasCartItems}>
+                <div class="table-scroll slds-m-top_medium">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Product</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Unit Price</th>
+                                <th scope="col">Source / Warning</th>
+                                <th scope="col">Manager Override</th>
+                                <th scope="col">Line Total</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={cartItems} for:item="item">
+                                <tr key={item.id} class={item.rowClass}>
+                                    <td>{item.name}</td>
+                                    <td>
+                                        <lightning-input type="number" variant="label-hidden" label="Cart quantity"
+                                            min={item.minimumQuantity} step="1" data-id={item.id} value={item.quantity}
+                                            onchange={handleCartQuantityChange}></lightning-input>
+                                    </td>
+                                    <td>
+                                        <lightning-formatted-number value={item.unitPrice}
+                                            format-style="currency"></lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <template if:true={item.fallback}>
+                                            <span class="slds-text-color_error">LOCAL FALLBACK</span>
+                                            <p>{item.fallbackReason}</p>
+                                        </template>
+                                        <template if:false={item.fallback}>{item.priceSource}</template>
+                                    </td>
+                                    <td>
+                                        <template if:true={isManager}>
+                                            <lightning-input type="number" label="Override price" variant="label-hidden"
+                                                min="0" step="0.01" data-id={item.id} value={item.overridePrice}
+                                                onchange={handleOverridePriceChange}></lightning-input>
+                                            <lightning-input type="text" label="Override reason"
+                                                placeholder="Required for override" data-id={item.id}
+                                                value={item.overrideReason}
+                                                onchange={handleOverrideReasonChange}></lightning-input>
+                                        </template>
+                                        <template if:false={isManager}>Not permitted</template>
+                                    </td>
+                                    <td>
+                                        <lightning-formatted-number value={item.lineTotal}
+                                            format-style="currency"></lightning-formatted-number>
+                                    </td>
+                                    <td>
+                                        <lightning-button label="Remove" data-id={item.id}
+                                            onclick={handleRemoveFromCart}></lightning-button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="slds-m-top_medium slds-grid slds-wrap slds-gutters">
+                    <div class="slds-col">
+                        <lightning-button label="Recheck ERP Prices" onclick={handleRecheckPrices}
+                            disabled={isWorking}></lightning-button>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-button label="Checkout and Create Order" variant="brand" onclick={handleCheckout}
+                            disabled={isWorking}></lightning-button>
+                    </div>
+                </div>
+            </template>
+            <template if:false={hasCartItems}>
+                <p class="slds-m-top_medium">Your cart is empty. Add a product to continue.</p>
+            </template>
+            <template if:true={isWorking}>
+                <lightning-spinner alternative-text="Processing order" size="medium"></lightning-spinner>
+            </template>
+        </div>
+    </lightning-card>
+</template>

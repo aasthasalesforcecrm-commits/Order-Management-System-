@@ -1,0 +1,161 @@
+<apex:page standardController="Order"
+    extensions="OMSOrderPDFController"
+    renderAs="pdf"
+    showHeader="false"
+    applyHtmlTag="false"
+    applyBodyTag="false">
+ 
+    <html>
+        <head>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    font-size: 11px;
+                }
+ 
+                h1 {
+                    text-align: center;
+                }
+ 
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 15px;
+                }
+ 
+                th, td {
+                    border: 1px solid #999;
+                    padding: 7px;
+                    text-align: left;
+                }
+ 
+                th {
+                    background-color: #eeeeee;
+                }
+ 
+                .right {
+                    text-align: right;
+                }
+ 
+                .fallback {
+                    color: #b00000;
+                    font-weight: bold;
+                }
+ 
+                .total {
+                    text-align: right;
+                    font-weight: bold;
+                    margin-top: 20px;
+                }
+            </style>
+        </head>
+ 
+        <body>
+ 
+            <h1>Order Summary</h1>
+ 
+            <p>
+                <strong>Order Number:</strong>
+                {!orderRecord.OrderNumber}
+            </p>
+ 
+            <p>
+                <strong>Order Date:</strong>
+                <apex:outputText value="{0,date,dd/MM/yyyy}">
+                    <apex:param value="{!orderRecord.EffectiveDate}"/>
+                </apex:outputText>
+            </p>
+ 
+            <h3>Customer Details</h3>
+ 
+            <p>
+                <strong>Name:</strong>
+                {!orderRecord.Account.Name}
+            </p>
+ 
+            <p>
+                <strong>Phone:</strong>
+                {!orderRecord.Account.Phone}
+            </p>
+ 
+            <p>
+                <strong>Address:</strong>
+                {!orderRecord.Account.BillingStreet},
+                {!orderRecord.Account.BillingCity},
+                {!orderRecord.Account.BillingState},
+                {!orderRecord.Account.BillingPostalCode},
+                {!orderRecord.Account.BillingCountry}
+            </p>
+ 
+            <h3>Order Items</h3>
+ 
+            <table>
+                <tr>
+                    <th>Product</th>
+                    <th>Product Code</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Line Total</th>
+                    <th>Price Information</th>
+                </tr>
+ 
+                <apex:repeat value="{!lines}" var="line">
+ 
+                    <tr>
+                        <td>
+                            {!line.item.PricebookEntry.Product2.Name}
+                        </td>
+ 
+                        <td>
+                            {!line.item.PricebookEntry.Product2.ProductCode}
+                        </td>
+ 
+                        <td>
+                            {!line.item.Quantity}
+                        </td>
+ 
+                        <td>
+                            <apex:outputText value="{0,number,###,##0.00}">
+                                <apex:param value="{!line.item.UnitPrice}"/>
+                            </apex:outputText>
+                        </td>
+ 
+                        <td>
+                            <apex:outputText value="{0,number,###,##0.00}">
+                                <apex:param value="{!line.item.TotalPrice}"/>
+                            </apex:outputText>
+                        </td>
+ 
+                        <td>
+                            <apex:outputPanel rendered="{!line.fallbackUsed}">
+ 
+                                <span class="fallback">
+                                    FALLBACK PRICE USED
+                                </span>
+ 
+                                <br/>
+ 
+                                {!line.item.Fallback_Reason__c}
+ 
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+ 
+                </apex:repeat>
+ 
+            </table>
+ 
+            <p class="total">
+ 
+                Grand Total:
+ 
+                <apex:outputText value="{0,number,###,##0.00}">
+                    <apex:param value="{!orderRecord.TotalAmount}"/>
+                </apex:outputText>
+ 
+            </p>
+ 
+        </body>
+    </html>
+ 
+</apex:page>
